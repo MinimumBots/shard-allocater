@@ -31,4 +31,4 @@ export const SHARD_LIST: number[] | 'auto' = (
 	process.env['SHARD_LIST']?.split(',').map(Number) ?? 'auto'
 );
 
-export const REPORT_WEBHOOK_URL: string | null = process.env['SHARD_COUNT'] ?? null;
+export const REPORT_WEBHOOK_URL: string | null = process.env['REPORT_WEBHOOK_URL'] ?? null;

@@ -18,4 +18,4 @@ export const DISCORD_TOKEN = (() => {
 })();
 export const SHARD_COUNT = Number(process.env['SHARD_COUNT']) || null;
 export const SHARD_LIST = (process.env['SHARD_LIST']?.split(',').map(Number) ?? 'auto');
-export const REPORT_WEBHOOK_URL = process.env['SHARD_COUNT'] ?? null;
+export const REPORT_WEBHOOK_URL = process.env['REPORT_WEBHOOK_URL'] ?? null;
