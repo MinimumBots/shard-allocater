@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 export const BOT_PATH: string = (() => {
 	const path = process.argv.at(2);
 	
