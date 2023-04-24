@@ -6,12 +6,12 @@ import { format } from 'util';
 import type { AppenderFunction, AppenderModule, LoggingEvent } from 'log4js';
 
 const colors: Record<LogLevel, number> = {
-	trace: 0xe6e7e8,
-	debug: 0x1587bf,
-	info: 0x67b160,
-	warn: 0xff922e,
-	error: 0xed3544,
-	fatal: 0x9867c6,
+	TRACE: 0xe6e7e8,
+	DEBUG: 0x1587bf,
+	INFO: 0x67b160,
+	WARN: 0xff922e,
+	ERROR: 0xed3544,
+	FATAL: 0x9867c6,
 };
 
 const webhook = REPORT_WEBHOOK_URL ? new WebhookClient({ url: REPORT_WEBHOOK_URL }) : null;
@@ -25,7 +25,7 @@ const report = (event: LoggingEvent): void => {
 		.setColor(colors[event.level.levelStr as LogLevel])
 		.setAuthor({ name: event.categoryName })
 		.setDescription(codeBlock(format(...event.data)))
-		.setFooter({ text: event.level.toString() })
+		.setFooter({ text: event.level.levelStr })
 		.setTimestamp(event.startTime);
 
 	webhook.send({ embeds: [embed] })
