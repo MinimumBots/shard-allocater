@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { BOT_PATH, DISCORD_TOKEN, SHARD_LIST, SHARD_COUNT } from './const';
-import { logger } from './logger';
+import { BOT_PATH, DISCORD_TOKEN, SHARD_LIST, SHARD_COUNT } from './const.js';
+import { logger } from './logger.js';
 import { ShardingManager, fetchRecommendedShardCount } from 'discord.js';
 const shardCount = SHARD_COUNT ?? await fetchRecommendedShardCount(DISCORD_TOKEN);
 const manager = new ShardingManager(BOT_PATH, {

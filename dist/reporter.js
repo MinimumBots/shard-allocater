@@ -1,5 +1,5 @@
 import { EmbedBuilder, WebhookClient, codeBlock } from 'discord.js';
-import { REPORT_WEBHOOK_URL } from './const';
+import { REPORT_WEBHOOK_URL } from './const.js';
 import { format } from 'util';
 const colors = {
     trace: 0xe6e7e8,

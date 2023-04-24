@@ -1,6 +1,6 @@
 import log4js from 'log4js';
-import { LOG_FILENAME, LOG_LEVEL } from './const';
-import { reportAppenderModule } from './reporter';
+import { LOG_FILENAME, LOG_LEVEL } from './const.js';
+import { reportAppenderModule } from './reporter.js';
 const config = {
     appenders: {
         console: {

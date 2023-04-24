@@ -1,6 +1,6 @@
 import { EmbedBuilder, WebhookClient, codeBlock } from 'discord.js'
-import { REPORT_WEBHOOK_URL } from './const';
-import { LogLevel } from './types';
+import { REPORT_WEBHOOK_URL } from './const.js';
+import { LogLevel } from './types.js';
 import { format } from 'util';
 
 import type { AppenderFunction, AppenderModule, LoggingEvent } from 'log4js';
