@@ -9,7 +9,7 @@ const config: log4js.Configuration = {
 		},
 		file: {
 			type: 'file',
-			filename: `${LOG_FILENAME}.log`,
+			filename: LOG_FILENAME,
 			maxLogSize: 1048576,	// 1MB
 			backups: 10,
 			keepFileExt: true,

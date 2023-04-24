@@ -8,7 +8,7 @@ const config = {
         },
         file: {
             type: 'file',
-            filename: `${LOG_FILENAME}.log`,
+            filename: LOG_FILENAME,
             maxLogSize: 1048576,
             backups: 10,
             keepFileExt: true,
