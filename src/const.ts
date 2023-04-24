@@ -13,7 +13,7 @@ export const BOT_PATH: string = (() => {
 })();
 
 export const LOG_LEVEL: string = process.env['LOG_LEVEL'] ?? 'info';
-export const LOG_FILENAME: string | null = process.env['LOG_LEVEL'] ?? null;
+export const LOG_FILENAME: string | null = process.env['LOG_FILENAME'] ?? null;
 
 export const DISCORD_TOKEN: string = (() => {
 	const token = process.env['DISCORD_TOKEN'];

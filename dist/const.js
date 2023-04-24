@@ -8,7 +8,7 @@ export const BOT_PATH = (() => {
     return path;
 })();
 export const LOG_LEVEL = process.env['LOG_LEVEL'] ?? 'info';
-export const LOG_FILENAME = process.env['LOG_LEVEL'] ?? null;
+export const LOG_FILENAME = process.env['LOG_FILENAME'] ?? null;
 export const DISCORD_TOKEN = (() => {
     const token = process.env['DISCORD_TOKEN'];
     if (!token) {
