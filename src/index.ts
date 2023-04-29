@@ -16,11 +16,13 @@ const manager = new ShardingManager(
 );
 
 let readyCount = 0;
+let isAllReady = false;
 const checkAllReady = () => {
 	readyCount++;
 
 	if (readyCount >= shardCount) {
 		logger.info('All shards are ready.');
+		isAllReady = true;
 	}
 }
 
@@ -30,7 +32,9 @@ manager.on('shardCreate', (shard) => {
 		.on('ready', () => {
 			logger.info(`No.${shard.id} shard turns ready.`);
 
-			checkAllReady();
+			if (!isAllReady) {
+				checkAllReady();
+			}
 		})
 		.on('disconnect', () => logger.warn(`No.${shard.id} shard's WebSocket disconnects and will no longer reconnect.`))
 		.on('reconnecting', () => logger.info(`No.${shard.id} shard is attempting to reconnect or re-identify.`))
@@ -43,3 +47,14 @@ logger.info('Start spawning shards.');
 manager.spawn({ timeout: 60_000 })
 	.then(() => logger.info('All shards were spawned.'))
 	.catch((error) => logger.error(error));
+
+const terminate = (signal: NodeJS.Signals): void => {
+	logger.warn(`A "${signal}" signal terminates all shards.`);
+
+	manager.shards.forEach((shard) => shard.kill());
+	process.exit(0);
+}
+
+process
+	.on('SIGTERM', (signal) => terminate(signal))
+	.on('SIGINT', (signal) => terminate(signal));
