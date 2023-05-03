@@ -33,7 +33,7 @@ manager.on('shardCreate', (shard) => {
 });
 logger.info('Start spawning shards.');
 manager.spawn({ timeout: 60000 })
-    .then(() => logger.info('All shards were spawned.'))
+    .then(() => logger.debug('All shards were spawned.'))
     .catch((error) => logger.error(error));
 const terminate = (signal) => {
     logger.warn(`A "${signal}" signal terminates all shards.`);

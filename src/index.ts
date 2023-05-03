@@ -45,7 +45,7 @@ manager.on('shardCreate', (shard) => {
 logger.info('Start spawning shards.');
 
 manager.spawn({ timeout: 60_000 })
-	.then(() => logger.info('All shards were spawned.'))
+	.then(() => logger.debug('All shards were spawned.'))
 	.catch((error) => logger.error(error));
 
 const terminate = (signal: NodeJS.Signals): void => {
