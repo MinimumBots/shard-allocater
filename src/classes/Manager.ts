@@ -19,7 +19,7 @@ export class Manager {
 	}
 
 	public async up(): Promise<void> {
-		this.setup();
+		await this.setup();
 		this.spawn();
 	}
 

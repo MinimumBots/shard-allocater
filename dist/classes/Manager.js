@@ -10,7 +10,7 @@ export class Manager {
         this.logger = logger;
     }
     async up() {
-        this.setup();
+        await this.setup();
         this.spawn();
     }
     down() {
