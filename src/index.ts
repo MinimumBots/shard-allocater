@@ -1,59 +1,22 @@
 #!/usr/bin/env node
 
-import { BOT_PATH, DISCORD_TOKEN, SHARD_LIST, SHARD_COUNT } from './const.js';
-import { logger } from './logger.js';
-import { ShardingManager, fetchRecommendedShardCount } from 'discord.js';
+import { LoggerFactory } from './classes/LoggerFactory.js';
+import { Manager } from './classes/Manager.js';
+import { Reporter } from './classes/Reporter.js';
 
-const shardCount: number = SHARD_COUNT ?? await fetchRecommendedShardCount(DISCORD_TOKEN);
+const logger = new LoggerFactory(new Reporter().appenderModule).getLogger('Shard Allocater');
 
-const manager = new ShardingManager(
-	BOT_PATH,
-	{
-		token: DISCORD_TOKEN,
-		totalShards: shardCount,
-		shardList: SHARD_LIST,
-	},
-);
-
-let readyCount = 0;
-let isAllReady = false;
-const checkAllReady = () => {
-	readyCount++;
-
-	if (readyCount >= shardCount) {
-		logger.info('All shards are ready.');
-		isAllReady = true;
-	}
-}
-
-manager.on('shardCreate', (shard) => {
-	shard
-		.on('spawn', () => logger.debug(`Shard ${shard.id + 1}/${manager.totalShards} spawned.`))
-		.on('ready', () => {
-			logger.info(`No.${shard.id} shard turns ready.`);
-
-			if (!isAllReady) {
-				checkAllReady();
-			}
-		})
-		.on('disconnect', () => logger.warn(`No.${shard.id} shard's WebSocket disconnects and will no longer reconnect.`))
-		.on('reconnecting', () => logger.info(`No.${shard.id} shard is attempting to reconnect or re-identify.`))
-		.on('death', () => logger.warn(`No.${shard.id} shard's child process exiting.`))
-		.on('error', (error) => logger.error(error));
-});
-
-logger.info('Start spawning shards.');
-
-manager.spawn({ timeout: 60_000 })
-	.then(() => logger.debug('All shards were spawned.'))
-	.catch((error) => logger.error(error));
+const manager = new Manager(logger);
 
 const terminate = (signal: NodeJS.Signals): void => {
-	logger.warn(`A "${signal}" signal terminates all shards.`);
+	logger.warn(`Receive "${signal}" signal.`);
 
-	manager.shards.forEach((shard) => shard.kill());
+	manager.down();
 	process.exit(0);
 }
+
+manager.up()
+	.catch(/* ignore */);
 
 process
 	.on('SIGTERM', (signal) => terminate(signal))
