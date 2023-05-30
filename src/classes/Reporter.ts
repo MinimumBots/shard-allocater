@@ -35,7 +35,7 @@ export class Reporter {
 		const embed: EmbedBuilder = new EmbedBuilder()
 			.setColor(Reporter.colors[event.level.levelStr as LogLevel])
 			.setAuthor({ name: event.categoryName })
-			.setDescription(codeBlock(format(...event.data)))
+			.setDescription(codeBlock('ansi', format(...event.data)))
 			.setFooter({ text: event.level.levelStr })
 			.setTimestamp(event.startTime);
 	

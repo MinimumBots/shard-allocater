@@ -19,7 +19,6 @@ export class Constant {
 
 	public static readonly DiscordToken: string = (() => {
 		const token = process.env['DISCORD_TOKEN'];
-
 		if (!token) {
 			throw new RangeError('The "DISCORD_TOKEN" is not specified.');
 		}
@@ -27,15 +26,23 @@ export class Constant {
 		return token;
 	})();
 
-	public static readonly ShardCount: number | null = Number(process.env['SHARD_COUNT']) || null;
+	public static readonly ShardCount: number | null = Number(this.sanitizeNumber(process.env['SHARD_COUNT'])) || null;
 
 	public static readonly ShardList: number[] | null = (
 		process.env['SHARD_LIST']?.split(',').map(Number) ?? null
 	);
 
-	public static readonly ShardSpawnTimeout: number | null = Number(process.env['SHARD_SPAWN_TIMEOUT']) || null;
+	public static readonly ShardSpawnTimeout: number | null = Number(this.sanitizeNumber(process.env['SHARD_SPAWN_TIMEOUT'])) || null;
 
-	public static readonly ShardReconnectTimeout: number | null = Number(process.env['SHARD_RECONNECT_TIMEOUT']) || null;
+	public static readonly ShardRecoveryTimeout: number | null = Number(this.sanitizeNumber(process.env['SHARD_RECOVERY_TIMEOUT'])) || null;
 
 	public static readonly ReportWebhookUrl: string | null = process.env['REPORT_WEBHOOK_URL'] ?? null;
+
+	public static readonly ReportStatusInterval: number | null = Number(this.sanitizeNumber(process.env['REPORT_STATUS_INTERVAL'])) || null;
+
+	private static sanitizeNumber(value: string | undefined): string | undefined {
+		return value
+			? value.trim().replaceAll('_', '')
+			: undefined;
+	}
 }

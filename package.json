@@ -10,7 +10,8 @@
     "dev": "ts-node -r dotenv/config ./src/index.ts",
     "build": "run-s clean compile",
     "compile": "tsc",
-    "clean": "rimraf ./dist"
+    "clean": "rimraf ./dist",
+    "prepack": "run-s clean compile"
   },
   "bin": {
     "sharding": "dist/index.js"
@@ -19,12 +20,13 @@
   "author": "GrapeColor",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.10.2",
+    "ansi-colors": "^4.1.3",
+    "discord.js": "^14.11.0",
     "dotenv": "^16.0.3",
     "log4js": "^6.9.1"
   },
   "devDependencies": {
-    "@types/node": "^18.15.11",
+    "@types/node": "^20.1.4",
     "npm-run-all": "^4.1.5",
     "rimraf": "^5.0.0",
     "ts-node": "^10.9.1",

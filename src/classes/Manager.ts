@@ -1,5 +1,6 @@
+import ansi from 'ansi-colors';
 import { Constant } from '../static/Constant.js';
-import { setTimeout } from 'timers/promises';
+import { setInterval } from 'timers/promises';
 import { ShardEvents, ShardingManager, fetchRecommendedShardCount } from 'discord.js';
 
 import type { Logger } from 'log4js';
@@ -8,9 +9,11 @@ import type { Shard } from 'discord.js';
 export class Manager {
 	private readonly logger: Logger;
 
-	private readonly shardReconnectingFlags: Map<number, boolean> = new Map();
+	private readonly faultyShardIds: Set<number> = new Set();
 
 	private shardingManager: ShardingManager | null = null;
+
+	private isAllSpawned: boolean = false;
 
 	private isAllReady: boolean = false;
 
@@ -31,7 +34,6 @@ export class Manager {
 
 	private async setup(): Promise<void> {
 		this.shardingManager = await this.createShardingManager();
-
 		this.setShardEvents();
 	}
 
@@ -39,7 +41,10 @@ export class Manager {
 		this.logger.info('Start spawning shards.');
 
 		this.shardingManager?.spawn({ timeout: Constant.ShardSpawnTimeout ?? -1 })
-			.then(() => this.logger.debug('All shards were spawned.'))
+			.then(() => {
+				this.logger.debug('All shards were spawned.');
+				this.isAllSpawned = true;
+			})
 			.catch((error) => this.logger.error(error));
 	}
 
@@ -61,70 +66,105 @@ export class Manager {
 
 		this.shardingManager?.on('shardCreate', (shard) => {
 			shard
-				.on(ShardEvents.Spawn, () => this.receiveShardSpawn(shard, totalShards))
-				.on(ShardEvents.Ready, () => this.receiveShardReady(shard))
-				.on(ShardEvents.Disconnect, () => this.receiveShardDisconnect(shard))
-				.on(ShardEvents.Reconnecting, () => this.receiveShardReconnecting(shard))
-				.on(ShardEvents.Death, () => this.receiveShardDeath(shard))
-				.on(ShardEvents.Error, (error) => this.receiveShardError(shard, error));
+				.on(ShardEvents.Spawn, () => this.onShardSpawn(shard, totalShards))
+				.on(ShardEvents.Ready, () => this.onShardReady(shard))
+				.on(ShardEvents.Disconnect, () => this.onShardDisconnect(shard))
+				.on(ShardEvents.Reconnecting, () => this.onShardReconnecting(shard))
+				.on(ShardEvents.Death, () => this.onShardDeath(shard))
+				.on(ShardEvents.Error, (error) => this.onShardError(shard, error));
 		});
 	}
 
-	private receiveShardSpawn(shard: Shard, totalShards: number): void {
+	private onShardSpawn(shard: Shard, totalShards: number): void {
 		this.logger.debug(`Shard ${shard.id + 1}/${totalShards} spawned.`);
 	}
 
-	private receiveShardReady(shard: Shard): void {
-		this.logger.info(`#${shard.id} shard turns ready.`);
+	private onShardReady(shard: Shard): void {
+		this.logger.info(`Shard #${shard.id} turns ready.`);
 
 		this.checkAllReady();
-
-		this.shardReconnectingFlags.set(shard.id, false);
 	}
 
-	private receiveShardDisconnect(shard: Shard): void {
-		this.logger.warn(`#${shard.id} shard is WebSocket disconnects and will no longer reconnect.`);
+	private onShardDisconnect(shard: Shard): void {
+		this.logger.warn(`Shard #${shard.id} is WebSocket disconnects and will no longer reconnect.`);
 	}
 
-	private receiveShardReconnecting(shard: Shard): void {
-		this.logger.info(`#${shard.id} shard is attempting to reconnect or re-identify.`);
-
-		if (this.shardReconnectingFlags.get(shard.id)) {
-			return;
-		}
-
-		if (Constant.ShardReconnectTimeout) {
-			setTimeout(Constant.ShardReconnectTimeout)
-				.then(() => this.respawnShard(shard))
-				.catch(/* ignore */);
-		}
-
-		this.shardReconnectingFlags.set(shard.id, true);
+	private onShardReconnecting(shard: Shard): void {
+		this.logger.info(`Shard #${shard.id} is attempting to reconnect or re-identify.`);
 	}
 
-	private receiveShardDeath(shard: Shard): void {
-		this.logger.warn(`#${shard.id} shard is child process exiting.`);
+	private onShardDeath(shard: Shard): void {
+		this.logger.warn(`Shard #${shard.id} is child process exiting.`);
 	}
 
-	private receiveShardError(shard: Shard, error: Error): void {
-		this.logger.error(`#${shard.id} shard throw error.`, error);
+	private onShardError(shard: Shard, error: Error): void {
+		this.logger.error(`Shard #${shard.id} throw error.`, error);
 	}
 
 	private checkAllReady(): void {
-		if (this.isAllReady || !this.shardingManager) {
+		if (!this.isAllSpawned || this.isAllReady || !this.shardingManager) {
 			return;
 		}
 
 		this.isAllReady = !this.shardingManager.shards.some((shard) => !shard.ready);
 
-		if (this.isAllReady) {
-			this.logger.info('All shards are ready.');
+		if (!this.isAllReady) {
+			return;
+		}
+
+		this.logger.info('All shards are ready.');
+
+		this.startMonitoring();
+}
+
+	private startMonitoring(): void {
+		this.reportShardsStatus()
+			.catch(/* no handling */);
+
+		this.monitorShards()
+			.catch(/* no handling */);
+	}
+
+	private async reportShardsStatus(): Promise<void> {
+		if (!Constant.ReportStatusInterval || !this.shardingManager) {
+			return;
+		}
+
+		for await (const _ of setInterval(Constant.ReportStatusInterval)) {
+			const statuses = this.shardingManager.shards.map(
+				(shard) => shard.ready ? ansi.bold.green(`[${shard.id}]`) : ansi.bold.red(`[${shard.id}]`)
+			).join(' ');
+
+			this.logger.info(`Life and death per shard: ${statuses}`);
 		}
 	}
 
-	private respawnShard(shard: Shard): void {
-		shard.respawn()
-			.then(() => this.logger.info(`#${shard.id} shard successfully respawned.`))
-			.catch(() => this.logger.fatal(`#${shard.id} shard failed to respawn.`));
+	private async monitorShards(): Promise<void> {
+		if (!Constant.ShardRecoveryTimeout) {
+			return;
+		}
+
+		for await (const _ of setInterval(Constant.ShardRecoveryTimeout)) {
+			this.recoverFaultyShards();
+			this.takeFaultyShards();
+		}
+	}
+
+	private recoverFaultyShards(): void {
+		[...this.faultyShardIds.values()]
+			.filter((id) => this.shardingManager?.shards.get(id)?.ready === false)
+			.forEach((id) => this.respawnShard(id));
+	}
+
+	private takeFaultyShards(): void {
+		[...(this.shardingManager?.shards.values() ?? [])]
+			.filter((shard) => !shard.ready)
+			.forEach((shard) => this.faultyShardIds.add(shard.id));
+	}
+
+	private respawnShard(id: number): void {
+		this.shardingManager?.shards.get(id)?.respawn()
+			.then(() => this.logger.info(`Shard #${id} successfully respawned.`))
+			.catch(() => this.logger.fatal(`Shard #${id} failed to respawn.`));
 	}
 }

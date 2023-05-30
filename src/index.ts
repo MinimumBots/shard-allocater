@@ -16,7 +16,7 @@ const terminate = (signal: NodeJS.Signals): void => {
 }
 
 manager.up()
-	.catch(/* ignore */);
+	.catch(/* no handling */);
 
 process
 	.on('SIGTERM', (signal) => terminate(signal))
