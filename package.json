@@ -1,6 +1,6 @@
 {
   "name": "shard-allocater",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "exports": "./dist/index.js",
   "type": "module",
