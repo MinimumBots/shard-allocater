@@ -1,8 +1,7 @@
 {
   "name": "shard-allocater",
   "version": "0.1.1",
-  "description": "",
-  "exports": "./dist/index.js",
+  "description": "Sharding discord bot clients(discord.js).",
   "type": "module",
   "scripts": {
     "start": "node ./dist/index.js",
@@ -14,9 +13,11 @@
     "prepack": "run-s clean compile"
   },
   "bin": {
-    "sharding": "dist/index.js"
+    "sharding": "./dist/index.js"
   },
-  "keywords": [],
+  "files": [
+    "./dist"
+  ],
   "author": "GrapeColor",
   "license": "MIT",
   "dependencies": {
