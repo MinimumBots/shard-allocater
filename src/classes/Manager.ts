@@ -121,14 +121,14 @@ export class Manager {
 }
 
 	private startMonitoring(): void {
-		this.reportShardsStatus()
+		this.reportShardStatuses()
 			.catch(/* no handling */);
 
 		this.monitorShards()
 			.catch(/* no handling */);
 	}
 
-	private async reportShardsStatus(): Promise<void> {
+	private async reportShardStatuses(): Promise<void> {
 		if (!Constant.ReportStatusInterval || !this.shardingManager) {
 			return;
 		}
@@ -138,7 +138,7 @@ export class Manager {
 				(shard) => shard.ready ? ansi.bold.green(`[${shard.id}]`) : ansi.bold.red(`[${shard.id}]`)
 			).join(' ');
 
-			this.logger.info(`Life and death per shard: ${statuses}`);
+			this.logger.info(`Shard statuses: ${statuses}`);
 		}
 	}
 
