@@ -51,7 +51,6 @@ export class Reporter {
 	}
 
 	private isAboveLogLevel(logLevel: LogLevel): boolean {
-		const indexOf = this.orderedLogLevel.indexOf;
-		return indexOf(this.logLevel) > indexOf(logLevel);
+		return this.orderedLogLevel.indexOf(this.logLevel) > this.orderedLogLevel.indexOf(logLevel);
 	}
 }
