@@ -42,8 +42,9 @@ export class Manager {
 
 		this.shardingManager?.spawn({ timeout: Constant.ShardSpawnTimeout ?? -1 })
 			.then(() => {
-				this.logger.debug('All shards were spawned.');
 				this.isAllSpawned = true;
+				this.logger.debug('All shards were spawned.');
+				this.checkAllReady();
 			})
 			.catch((error) => this.logger.error(error));
 	}
@@ -82,7 +83,9 @@ export class Manager {
 	private onShardReady(shard: Shard): void {
 		this.logger.info(`Shard #${shard.id} turns ready.`);
 
-		this.checkAllReady();
+		if (this.isAllSpawned) {
+			this.checkAllReady();
+		}
 	}
 
 	private onShardDisconnect(shard: Shard): void {
@@ -102,7 +105,7 @@ export class Manager {
 	}
 
 	private checkAllReady(): void {
-		if (!this.isAllSpawned || this.isAllReady || !this.shardingManager) {
+		if (this.isAllReady || !this.shardingManager) {
 			return;
 		}
 
