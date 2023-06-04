@@ -10,7 +10,7 @@
     "build": "run-s clean compile",
     "compile": "tsc",
     "clean": "rimraf ./dist",
-    "prepack": "run-s clean compile"
+    "prepack": "run-s test clean compile"
   },
   "bin": {
     "sharding": "./dist/index.js"

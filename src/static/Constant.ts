@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { LogLevel } from '../types';
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ export class Constant {
 		return path;
 	})();
 
-	public static readonly LogLevel: string = process.env['LOG_LEVEL'] ?? 'info';
+	public static readonly LogLevel: string = process.env['LOG_LEVEL'] ?? 'INFO';
 
 	public static readonly LogFilename: string | null = process.env['LOG_FILENAME'] ?? null;
 
@@ -39,6 +40,8 @@ export class Constant {
 	public static readonly ReportWebhookUrl: string | null = process.env['REPORT_WEBHOOK_URL'] ?? null;
 
 	public static readonly ReportStatusInterval: number | null = Number(this.sanitizeNumber(process.env['REPORT_STATUS_INTERVAL'])) || null;
+
+	public static readonly ReportLogLevel: LogLevel = (process.env['REPORT_LOG_LEVEL'] ?? 'INFO') as LogLevel;
 
 	private static sanitizeNumber(value: string | undefined): string | undefined {
 		return value

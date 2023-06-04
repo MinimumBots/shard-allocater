@@ -24,7 +24,7 @@ export class LoggerFactory {
 			categories: {
 				default: {
 					appenders: Constant.LogFilename ? ['console', 'file', 'report'] : ['console', 'report'],
-					level: Constant.LogLevel,
+					level: Constant.LogLevel.toLowerCase(),
 				},
 			},
 		};

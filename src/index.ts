@@ -3,8 +3,9 @@
 import { LoggerFactory } from './classes/LoggerFactory.js';
 import { Manager } from './classes/Manager.js';
 import { Reporter } from './classes/Reporter.js';
+import { Constant } from './static/Constant.js';
 
-const logger = new LoggerFactory(new Reporter().appenderModule).getLogger('Shard Allocater');
+const logger = new LoggerFactory(new Reporter(Constant.ReportLogLevel).appenderModule).getLogger('Shard Allocater');
 
 const manager = new Manager(logger);
 

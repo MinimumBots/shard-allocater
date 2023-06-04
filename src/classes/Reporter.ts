@@ -3,7 +3,7 @@ import { EmbedBuilder, WebhookClient, codeBlock } from 'discord.js';
 import { format } from 'util';
 
 import type { AppenderFunction, AppenderModule, LoggingEvent } from 'log4js';
-import type { LogLevel } from '../types.js';
+import type { LogLevel, OrderedLogLevel } from '../types.js';
 
 export class Reporter {
 	private static readonly colors: Record<LogLevel, number> = {
@@ -15,6 +15,9 @@ export class Reporter {
 		FATAL: 0x9867c6,
 	};
 
+	private readonly logLevel: LogLevel;
+	private readonly orderedLogLevel: OrderedLogLevel = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'];
+
 	private readonly webhookClient: WebhookClient | null = Constant.ReportWebhookUrl
 		? new WebhookClient({ url: Constant.ReportWebhookUrl })
 		: null;
@@ -25,21 +28,30 @@ export class Reporter {
 		},
 	};
 
-	public constructor() {}
+	public constructor(logLevel: LogLevel) {
+		this.logLevel = logLevel;
+	}
 
 	private report(event: LoggingEvent): void {
-		if (!this.webhookClient) {
+		const logLevel = event.level.levelStr as LogLevel;
+
+		if (!this.webhookClient || this.isAboveLogLevel(logLevel)) {
 			return;
 		}
-	
+
 		const embed: EmbedBuilder = new EmbedBuilder()
-			.setColor(Reporter.colors[event.level.levelStr as LogLevel])
+			.setColor(Reporter.colors[logLevel])
 			.setAuthor({ name: event.categoryName })
 			.setDescription(codeBlock('ansi', format(...event.data)))
-			.setFooter({ text: event.level.levelStr })
+			.setFooter({ text: logLevel })
 			.setTimestamp(event.startTime);
-	
+
 		this.webhookClient.send({ embeds: [embed] })
 			.catch(() => {});
+	}
+
+	private isAboveLogLevel(logLevel: LogLevel): boolean {
+		const indexOf = this.orderedLogLevel.indexOf;
+		return indexOf(this.logLevel) > indexOf(logLevel);
 	}
 }
