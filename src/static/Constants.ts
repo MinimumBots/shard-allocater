@@ -3,7 +3,7 @@ import { LogLevel } from '../types';
 
 dotenv.config();
 
-export class Constant {
+export class Constants {
 	public static readonly BotPath: string = (() => {
 		const path = process.argv.at(2);
 

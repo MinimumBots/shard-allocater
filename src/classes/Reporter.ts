@@ -1,4 +1,4 @@
-import { Constant } from '../static/Constant.js';
+import { Constants } from '../static/Constants.js';
 import { EmbedBuilder, WebhookClient, codeBlock } from 'discord.js';
 import { format } from 'util';
 
@@ -18,8 +18,8 @@ export class Reporter {
 	private readonly logLevel: LogLevel;
 	private readonly orderedLogLevel: OrderedLogLevel = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'];
 
-	private readonly webhookClient: WebhookClient | null = Constant.ReportWebhookUrl
-		? new WebhookClient({ url: Constant.ReportWebhookUrl })
+	private readonly webhookClient: WebhookClient | null = Constants.ReportWebhookUrl
+		? new WebhookClient({ url: Constants.ReportWebhookUrl })
 		: null;
 
 	public readonly appenderModule: AppenderModule = {

@@ -1,5 +1,5 @@
 import ansi from 'ansi-colors';
-import { Constant } from '../static/Constant.js';
+import { Constants } from '../static/Constants.js';
 import { setInterval } from 'timers/promises';
 import { ShardEvents, ShardingManager, fetchRecommendedShardCount } from 'discord.js';
 
@@ -40,7 +40,7 @@ export class Manager {
 	private spawn(): void {
 		this.logger.info('Start spawning shards.');
 
-		this.shardingManager?.spawn({ timeout: Constant.ShardSpawnTimeout ?? -1 })
+		this.shardingManager?.spawn({ timeout: Constants.ShardSpawnTimeout ?? -1 })
 			.then(() => {
 				this.isAllSpawned = true;
 				this.logger.debug('All shards were spawned.');
@@ -50,14 +50,14 @@ export class Manager {
 	}
 
 	private async createShardingManager(): Promise<ShardingManager> {
-		const shardCount: number = Constant.ShardCount ?? await fetchRecommendedShardCount(Constant.DiscordToken);
+		const shardCount: number = Constants.ShardCount ?? await fetchRecommendedShardCount(Constants.DiscordToken);
 
 		return new ShardingManager(
-			Constant.BotPath,
+			Constants.BotPath,
 			{
-				token: Constant.DiscordToken,
+				token: Constants.DiscordToken,
 				totalShards: shardCount,
-				shardList: Constant.ShardList ?? 'auto',
+				shardList: Constants.ShardList ?? 'auto',
 			},
 		);
 	}
@@ -129,11 +129,11 @@ export class Manager {
 	}
 
 	private async reportShardStatuses(): Promise<void> {
-		if (!Constant.ReportStatusInterval || !this.shardingManager) {
+		if (!Constants.ReportStatusInterval || !this.shardingManager) {
 			return;
 		}
 
-		for await (const _ of setInterval(Constant.ReportStatusInterval)) {
+		for await (const _ of setInterval(Constants.ReportStatusInterval)) {
 			const statuses = this.shardingManager.shards.map(
 				(shard) => shard.ready ? ansi.bold.green(`[${shard.id}]`) : ansi.bold.red(`[${shard.id}]`)
 			).join(' ');
@@ -143,11 +143,11 @@ export class Manager {
 	}
 
 	private async monitorShards(): Promise<void> {
-		if (!Constant.ShardRecoveryTimeout) {
+		if (!Constants.ShardRecoveryTimeout) {
 			return;
 		}
 
-		for await (const _ of setInterval(Constant.ShardRecoveryTimeout)) {
+		for await (const _ of setInterval(Constants.ShardRecoveryTimeout)) {
 			this.recoverFaultyShards();
 			this.takeFaultyShards();
 		}

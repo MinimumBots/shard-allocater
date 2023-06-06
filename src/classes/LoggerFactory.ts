@@ -1,5 +1,5 @@
 import log4js from 'log4js';
-import { Constant } from '../static/Constant.js';
+import { Constants } from '../static/Constants.js';
 
 export class LoggerFactory {
 	private readonly config: log4js.Configuration;
@@ -12,7 +12,7 @@ export class LoggerFactory {
 				},
 				file: {
 					type: 'file',
-					filename: Constant.LogFilename,
+					filename: Constants.LogFilename,
 					maxLogSize: 1048576,	// 1MB
 					backups: 10,
 					keepFileExt: true,
@@ -23,8 +23,8 @@ export class LoggerFactory {
 			},
 			categories: {
 				default: {
-					appenders: Constant.LogFilename ? ['console', 'file', 'report'] : ['console', 'report'],
-					level: Constant.LogLevel.toLowerCase(),
+					appenders: Constants.LogFilename ? ['console', 'file', 'report'] : ['console', 'report'],
+					level: Constants.LogLevel.toLowerCase(),
 				},
 			},
 		};
