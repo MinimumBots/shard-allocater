@@ -2,6 +2,7 @@ import ansi from 'ansi-colors';
 import { Constants } from '../static/Constants.js';
 import { setInterval } from 'timers/promises';
 import { ShardEvents, ShardingManager, fetchRecommendedShardCount } from 'discord.js';
+import { Utils } from '../static/Utils.js';
 
 import type { Logger } from 'log4js';
 import type { Shard } from 'discord.js';
@@ -71,6 +72,7 @@ export class Manager {
 				.on(ShardEvents.Ready, () => this.onShardReady(shard))
 				.on(ShardEvents.Disconnect, () => this.onShardDisconnect(shard))
 				.on(ShardEvents.Reconnecting, () => this.onShardReconnecting(shard))
+				.on(ShardEvents.Resume, () => this.onShardResume(shard))
 				.on(ShardEvents.Death, () => this.onShardDeath(shard))
 				.on(ShardEvents.Error, (error) => this.onShardError(shard, error));
 		});
@@ -81,7 +83,9 @@ export class Manager {
 	}
 
 	private onShardReady(shard: Shard): void {
-		this.logger.info(`Shard #${shard.id} turns ready.`);
+		if (this.isAllReady) {
+			this.logger.info(`Shard #${shard.id} turns ready.`);
+		}
 
 		if (this.isAllSpawned) {
 			this.checkAllReady();
@@ -94,6 +98,10 @@ export class Manager {
 
 	private onShardReconnecting(shard: Shard): void {
 		this.logger.info(`Shard #${shard.id} is attempting to reconnect or re-identify.`);
+	}
+
+	private onShardResume(shard: Shard): void {
+		this.logger.info(`Shard #${shard.id} resumes successfully.`);
 	}
 
 	private onShardDeath(shard: Shard): void {
@@ -115,10 +123,10 @@ export class Manager {
 			return;
 		}
 
-		this.logger.info('All shards are ready.');
+		this.logger.info(`All ${this.shardingManager.totalShards} shards are ready.`);
 
 		this.startMonitoring();
-}
+	}
 
 	private startMonitoring(): void {
 		this.reportShardStatuses()
@@ -134,11 +142,7 @@ export class Manager {
 		}
 
 		for await (const _ of setInterval(Constants.ReportStatusInterval)) {
-			const statuses = this.shardingManager.shards.map(
-				(shard) => shard.ready ? ansi.bold.green(`[${shard.id}]`) : ansi.bold.red(`[${shard.id}]`)
-			).join(' ');
-
-			this.logger.info(`Shard statuses: ${statuses}`);
+			this.generateReportLog();
 		}
 	}
 
@@ -151,6 +155,21 @@ export class Manager {
 			this.recoverFaultyShards();
 			this.takeFaultyShards();
 		}
+	}
+
+	private generateReportLog(): void {
+		if (!this.shardingManager) {
+			return;
+		}
+
+		const statuses = this.shardingManager.shards
+			.map((shard) => shard.ready ? ansi.bold.green(`[${shard.id}]`) : ansi.bold.red(`<${shard.id}>`));
+
+		const splitedStatuses = Utils.splitArray(statuses, 10)
+			.map((unit) => unit.join(' '))
+			.join('\n');
+
+		this.logger.info(`Shard statuses:\n${splitedStatuses}`);
 	}
 
 	private recoverFaultyShards(): void {
@@ -167,7 +186,7 @@ export class Manager {
 
 	private respawnShard(id: number): void {
 		this.shardingManager?.shards.get(id)?.respawn()
-			.then(() => this.logger.info(`Shard #${id} successfully respawned.`))
+			.then(() => this.logger.info(`Shard #${id} respawn successfully.`))
 			.catch(() => this.logger.fatal(`Shard #${id} failed to respawn.`));
 	}
 }
